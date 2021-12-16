@@ -1,0 +1,39 @@
+---
+title: '915'
+author: "blair christensen"
+date: "9/15/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+less f(x) --> shows us the documentation 
+syntax: less name 
+vim  f(x)--> same thing
+same syntax
+: set nowrap
+
+: --> active command
+: q --> quit
+cd ~  --> go to home director
+mkdir -->
+
+page adv --> space
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

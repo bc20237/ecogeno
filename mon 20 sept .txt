@@ -1,0 +1,47 @@
+bash ssh bchrist4@pbio381.uvm.edu
+conda activate qiime2-2021.8
+gotta create temp direct each time
+
+blairchristensen@ip0af52aa8 ~ % ssh bchrist4@pbio381.uvm.edu 
+bchrist4@pbio381.uvm.edu's password: 
+Last login: Wed Sep 15 11:03:27 2021 from ip0af52800.int.uvm.edu
+(base) [bchrist4@pbio381 ~]$ users
+bchrist4 icwillia maustin7 skmorris
+(base) [bchrist4@pbio381 ~]$ conda activate qiime2-2021.8
+(qiime2-2021.8) [bchrist4@pbio381 ~]$ export TMPDIR="/data/project_data/16S/tmptmpdir"
+(qiime2-2021.8) [bchrist4@pbio381 ~]$ echo $TMPDIR 
+/data/project_data/16S/tmptmpdir
+(qiime2-2021.8) [bchrist4@pbio381 ~]$ qiime tools import \
+>   --type 'SampleData[PairedEndSequencesWithQuality]' \
+>   --input-path /data/project_data/16S/pyc_manifest \
+>   --input-format PairedEndFastqManifestPhred33V2 \
+>   --output-path demux-paired-end_full.qza
+
+Imported /data/project_data/16S/pyc_manifest as PairedEndFastqManifestPhred33V2 to demux-paired-end_full.qza
+(qiime2-2021.8) [bchrist4@pbio381 ~]$ 
+(qiime2-2021.8) [bchrist4@pbio381 ~]$ 
+
+
+qiime demux summarize \
+  --i-data demux-paired-end_full.qza \
+  --o-visualization demux-pyc-sub.qzv
+  
+  qiime dada2 denoise-paired \
+  --i-demultiplexed-seqs demux-paired-end_full.qza \
+  --p-n-threads 4 \
+  --p-trim-left-f 16 \
+  --p-trim-left-r 0 \
+  --p-trunc-len-f 289 \
+  --p-trunc-len-r 257 \
+  --o-table table.qza \
+  --o-representative-sequences rep-seqs.qza \
+  --o-denoising-stats denoising-stats.qza
+  
+  4 values to decide
+  how much to cut off ends
+  how much to truncate top and bottom
+  
+  screen (keeps it from getting messed up )
+  ctrl a d to get out of screen 
+  
+  

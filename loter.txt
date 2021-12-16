@@ -1,0 +1,11 @@
+CHR="ChrXX"  # Be sure to customize to your chromosome number!!! 19
+
+echo $CHR  # Does it look right?
+
+# Then make some new folders to store future results in:
+
+mkdir LAI
+
+cd LAI/
+
+mkdir Admixed

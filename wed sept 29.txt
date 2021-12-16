@@ -1,0 +1,14 @@
+A hudsonica hypotheses/research questions:
+full factorial design 
+4 treatment groups- AA, AH, HA, HH, varying time points (f0, f2, f4, f11)
+individual and then additive or synergistic effect
+time series/PCA (allele freq, expression)
+compare all across F0 and F4
+look at raw data--> decide how to clean--> look at data again once cleaned
+
+.fastq .fq.gz
+
+
+
+#ambient F11
+fastqc AA_F11*.fq.gz --outdir=/data/project_data/RNAseq/fastqc/

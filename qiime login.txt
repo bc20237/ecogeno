@@ -1,0 +1,22 @@
+bash ssh bchrist4@pbio381.uvm.edu
+conda activate qiime2-2021.8
+gotta create temp direct each time
+
+blairchristensen@ip0af52aa8 ~ % ssh bchrist4@pbio381.uvm.edu 
+bchrist4@pbio381.uvm.edu's password: 
+Last login: Wed Sep 15 11:03:27 2021 from ip0af52800.int.uvm.edu
+(base) [bchrist4@pbio381 ~]$ users
+bchrist4 icwillia maustin7 skmorris
+(base) [bchrist4@pbio381 ~]$ conda activate qiime2-2021.8
+(qiime2-2021.8) [bchrist4@pbio381 ~]$ export TMPDIR="/data/project_data/16S/tmptmpdir"
+(qiime2-2021.8) [bchrist4@pbio381 ~]$ echo $TMPDIR 
+/data/project_data/16S/tmptmpdir
+(qiime2-2021.8) [bchrist4@pbio381 ~]$ qiime tools import \
+>   --type 'SampleData[PairedEndSequencesWithQuality]' \
+>   --input-path /data/project_data/16S/pyc_manifest \
+>   --input-format PairedEndFastqManifestPhred33V2 \
+>   --output-path demux-paired-end_full.qza
+
+Imported /data/project_data/16S/pyc_manifest as PairedEndFastqManifestPhred33V2 to demux-paired-end_full.qza
+(qiime2-2021.8) [bchrist4@pbio381 ~]$ 
+(qiime2-2021.8) [bchrist4@pbio381 ~]$ 

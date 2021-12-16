@@ -1,0 +1,44 @@
+ssh bchrist4@pbio381.uvm.edu
+pw
+conda activate qiime2-2021.8
+export TMPDIR="/data/project_data/16S/tmptmpdir"
+echo $TMPDIR
+
+mkdir training-feature-classifiers
+cd training-feature-classifiers
+wget ftp://greengenes.microbio.me/greengenes_release/gg_13_5/gg_13_8_otus.tar.gz
+gunzip gg_13_8_otus.tar.gz
+tar -xvf gg_13_8_otus.tar
+
+qiime feature-classifier classify-sklearn \
+  --i-classifier /data/project_data/16S/training-feature-classifiers/classifier.qza \
+  --i-reads ~/myresults/rep-seqs.qza \
+  --o-classification taxonomy.qza
+
+qiime metadata tabulate \
+  --m-input-file taxonomy.qza \
+  --o-visualization taxonomy.qzv 
+  
+qiime taxa barplot \
+  --i-table table.qza \
+  --i-taxonomy taxonomy.qza \
+  --m-metadata-file /data/project_data/16S/pyc_manifest \
+  --o-visualization taxa-bar-plots.qzv
+  
+  screen
+cd /data/project_data/16S//taxa
+conda activate qiime2-2021.8
+export TMPDIR="/data/project_data/16S/tmptmpdir"
+
+qiime composition add-pseudocount \
+  --i-table table.qza \
+  --o-composition-table comp-table.qza
+ 
+qiime composition ancom \
+  --i-table comp-table.qza \
+  --m-metadata-file /data/project_data/16S/pyc_manifest \
+  --m-metadata-column site-animal-health \
+  --o-visualization ancom-site-animal-health.qzv 
+  
+  screen 
+  screen -r

@@ -1,0 +1,93 @@
+ssh bchrist4@pbio381.uvm.edu
+pw
+conda activate qiime2-2021.8
+export TMPDIR="/data/project_data/16S/tmptmpdir"
+echo $TMPDIR
+#importing the metadata file (full)
+qiime tools import \
+--type 'SampleData[PairedEndSequencesWithQuality]' \
+--input-path /data/project_data/16S/pyc_subset_manifest \
+--input-format PairedEndFastqManifestPhred33V2 \
+--output-path demux-paired-end_sub.qza
+# table of the metadata just to take a look
+qiime metadata tabulate \
+  --m-input-file /data/project_data/16S/pyc_manifest \
+  --o-visualization tabulated-pyc-metadata.qzv
+# summary plots to visualize 
+qiime demux summarize \
+  --i-data demux-paired-end_sub.qza \
+  --o-visualization demux-pyc.qzv
+# based on the visualizations, trim forward reads to 16-250, reverse reads from 0-290
+screen 
+conda activate qiime2-2021.8
+export TMPDIR="/data/project_data/16S/tpdir"
+ qiime dada2 denoise-paired \
+  --i-demultiplexed-seqs demux-paired-end_full.qza \
+  --p-n-threads 4 \
+  --p-trim-left-f 16 \
+  --p-trim-left-r 0 \
+  --p-trunc-len-f 289 \
+  --p-trunc-len-r 257 \
+  --o-table table.qza \
+  --o-representative-sequences rep-seqs.qza \
+  --o-denoising-stats denoising-stats.qza
+#summaries of the DADA2 output
+qiime feature-table summarize \
+  --i-table table.qza \
+  --o-visualization table.qzv \
+  --m-sample-metadata-file pyc_subset_manifest
+#summaries of the DADA2 output
+qiime feature-table tabulate-seqs \
+  --i-data rep-seqs.qza \
+  --o-visualization rep-seqs.qzv
+#summaries of the DADA2 output
+qiime metadata tabulate \
+  --m-input-file denoising-stats.qza \
+  --o-visualization denoising-stats.qzv
+#taxonomic identification
+mkdir training-feature-classifiers
+cd training-feature-classifiers
+wget ftp://greengenes.microbio.me/greengenes_release/gg_13_5/gg_13_8_otus.tar.gz
+gunzip gg_13_8_otus.tar.gz
+tar -xvf gg_13_8_otus.tar
+#training the classifier
+qiime feature-classifier classify-sklearn \
+  --i-classifier /data/project_data/16S/training-feature-classifiers/classifier.qza \
+  --i-reads ~/myresults/rep-seqs.qza \
+  --o-classification taxonomy.qza
+#make a visualization file of the taxonomical data
+qiime metadata tabulate \
+  --m-input-file taxonomy.qza \
+  --o-visualization taxonomy.qzv 
+#a barplot and table of the taxa data
+qiime taxa barplot \
+  --i-table table.qza \
+  --i-taxonomy taxonomy.qza \
+  --m-metadata-file /data/project_data/16S/pyc_manifest \
+  --o-visualization taxa-bar-plots.qzv
+  
+#ancom to test for differential abundance
+qiime composition add-pseudocount \
+  --i-table table.qza \
+  --o-composition-table comp-table.qza
+ 
+qiime composition ancom \
+  --i-table comp-table.qza \
+  --m-metadata-file /data/project_data/16S/pyc_manifest \
+  --m-metadata-column site-animal-health \
+  --o-visualization ancom-site-animal-health.qzv 
+#gneiss to test for differential abundance
+qiime gneiss dendrogram-heatmap \
+  --i-table table.qza \
+  --i-tree gneiss_corr_clust_hierarchy.qza \
+  --m-metadata-file /data/project_data/16S/pyc_manifest \
+  --m-metadata-column animal-health \
+  --p-color-map seismic \
+  --o-visualization heatmap.qzv
+   ##
+#export taxonomy table to use in R bc I didnt have luck interpreting the ancom/gneiss 
+  scp bchrist4@pbio381.uvm.edu:~/myresults/taxonomy.qzv .
+
+  
+  
+  

@@ -1,0 +1,1 @@
+quality control (fastqc/multiqc) <--> cleaning (trimmomatic[headcrop 12])

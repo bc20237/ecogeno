@@ -1,0 +1,66 @@
+#!/bin/bash      # tells the computer which language to use
+
+cd ~/myresults   # navigate to where qiime will be able to find the input files below
+
+qiime feature-table summarize \
+  --i-table table.qza \
+  --o-visualization table.qzv \
+  --m-sample-metadata-file /data/project_data/16S/pyc_manifest
+
+qiime feature-table tabulate-seqs \
+  --i-data rep-seqs.qza \
+  --o-visualization rep-seqs.qzv
+
+qiime metadata tabulate \
+  --m-input-file denoising-stats.qza \
+  --o-visualization denoising-stats.qzv
+  
+  scp YOURUSERNAME@pbio381.uvm.edu:~/myresults/*.qzv .   #saves to local machine
+  
+  features - ASVs
+  
+decide how we want to rarify using the the qzv table to check out sample depth and distribution 
+
+qiime phylogeny align-to-tree-mafft-fasttree \
+  --i-sequences rep-seqs.qza \
+  --o-alignment aligned-rep-seqs.qza \
+  --o-masked-alignment masked-aligned-rep-seqs.qza \
+  --o-tree unrooted-tree.qza \
+  --o-rooted-tree rooted-tree.qza
+  
+  
+  qiime diversity core-metrics-phylogenetic \
+  --i-phylogeny rooted-tree.qza \
+  --i-table table.qza \
+  --p-sampling-depth 9000 \
+  --m-metadata-file /data/project_data/16S/pyc_manifest \
+  --output-dir core-metrics-results
+  
+  qiime diversity alpha-group-significance \
+  --i-alpha-diversity core-metrics-results/faith_pd_vector.qza \
+  --m-metadata-file /data/project_data/16S/pyc_manifest \
+  --o-visualization core-metrics-results/faith-pd-group-significance.qzv
+  
+ qiime diversity alpha-group-significance \
+  --i-alpha-diversity core-metrics-results/shannon_vector.qza \
+  --m-metadata-file /data/project_data/16S/pyc_manifest \
+  --o-visualization core-metrics-results/shannon_vector.qzv
+
+qiime diversity alpha-group-significance \
+  --i-alpha-diversity core-metrics-results/evenness_vector.qza \
+  --m-metadata-file /data/project_data/16S/pyc_manifest  \
+  --o-visualization core-metrics-results/evenness-group-significance.qzv
+  
+  qiime diversity beta-group-significance \
+  --i-distance-matrix core-metrics-results/weighted_unifrac_distance_matrix.qza \
+  --m-metadata-file /data/project_data/16S/pyc_manifest \
+  --m-metadata-column site-animal-health \
+  --o-visualization core-metrics-results/weighted-unifrac-site-animal-health-significance.qzv \
+  --p-pairwise
+
+qiime diversity beta-group-significance \
+  --i-distance-matrix core-metrics-results/weighted_unifrac_distance_matrix.qza \
+  --m-metadata-file /data/project_data/16S/pyc_manifest \
+  --m-metadata-column site-status \
+  --o-visualization core-metrics-results/weighted-unifrac-site-status-group-significance.qzv \
+  --p-pairwise

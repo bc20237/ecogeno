@@ -1,0 +1,25 @@
+#population genomics
+cd /data/project_data/PopGenomics
+zcat poplar_hybrids.vcf.gz | head -n 11
+
+#header contains lots of good metadata, check it out (contains descriptions of all the abbrevs, documentation etc)
+head Combined_Transect_Sampling_Data_2020.txt
+#ID	Transect	Latitude	Longitude	Elevation
+#201	Chilcotin	51.647358	-124.39305	827
+#202	Chilcotin	51.64812	-124.393608	827
+#203	Chilcotin	51.646388	-124.392691	827
+#204	Chilcotin	51.8997231	-124.422775	1065
+#205	Chilcotin	51.900276	-124.4197235	1050
+#206	Chilcotin	51.8986129	-124.4247207	1063
+#207	Chilcotin	52.13249	-123.6889	844
+#208	Chilcotin	52.126918	-123.686547	831
+#209	Chilcotin	52.126899	-123.686062	831
+vcftools --gzvcf poplar_hybrids.vcf.gz #<OPTIONS>
+vcftools --gzvcf poplar_hybrids.vcf.gz --maf 0.15
+#grep
+#regular expression- looks for patterns or matching lines and grabs those 
+#can parse metadata and then pass to vcf tools 
+grep "search term" filename.ext | cut -f1-2 #cuts out just the first and second column/field
+vcftools --gzvcf poplar_hybrids.vcf.gz --maf 0.15 --recode --out poplar_hybrids.maf05 #actually write out a new file
+#sudo superuser do, req admin shit
+#1 cm, recombination happening at 1 percent of the time. a genetic distance, not a physical distance  

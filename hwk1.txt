@@ -1,0 +1,108 @@
+ssh bchrist4@pbio381.uvm.edu
+pw
+conda activate qiime2-2021.8
+export TMPDIR="/data/project_data/16S/tmptmpdir"
+echo $TMPDIR
+#importing the metadata file (full)
+qiime tools import \
+--type 'SampleData[PairedEndSequencesWithQuality]' \
+--input-path /data/project_data/16S/pyc_subset_manifest \
+--input-format PairedEndFastqManifestPhred33V2 \
+--output-path demux-paired-end_sub.qza
+# table of the metadata just to take a look
+qiime metadata tabulate \
+  --m-input-file /data/project_data/16S/pyc_manifest \
+  --o-visualization tabulated-pyc-metadata.qzv
+# summary plots to visualize 
+qiime demux summarize \
+  --i-data demux-paired-end_full.qza \
+  --o-visualization demux-pyc.qzv
+# based on the visualizations, trim forward reads to 16-250, reverse reads from 0-290
+screen 
+conda activate qiime2-2021.8
+export TMPDIR="/data/project_data/16S/tpdir"
+ qiime dada2 denoise-paired \
+  --i-demultiplexed-seqs demux-paired-end_full.qza \
+  --p-n-threads 4 \
+  --p-trim-left-f 16 \
+  --p-trim-left-r 0 \
+  --p-trunc-len-f 289 \
+  --p-trunc-len-r 257 \
+  --o-table table.qza \
+  --o-representative-sequences rep-seqs.qza \
+  --o-denoising-stats denoising-stats.qza
+  
+  #make taxonomy table
+  qiime metadata tabulate \
+  --m-input-file taxonomy.qza \
+  --o-visualization taxonomy.qzv 
+  mkdir training-feature-classifiers
+cd training-feature-classifiers
+wget ftp://greengenes.microbio.me/greengenes_release/gg_13_5/gg_13_8_otus.tar.gz
+gunzip gg_13_8_otus.tar.gz
+tar -xvf gg_13_8_otus.tar
+
+qiime feature-classifier classify-sklearn \
+  --i-classifier /data/project_data/16S/training-feature-classifiers/classifier.qza \
+  --i-reads ~/myresults/rep-seqs.qza \
+  --o-classification taxonomy.qza
+
+qiime metadata tabulate \
+  --m-input-file taxonomy.qza \
+  --o-visualization taxonomy.qzv 
+  #barplots of the taxa, can look at differences among 
+qiime taxa barplot \
+  --i-table table.qza \
+  --i-taxonomy taxonomy.qza \
+  --m-metadata-file /data/project_data/16S/pyc_manifest \
+  --o-visualization taxa-bar-plots.qzv
+  
+  # ancom to test for differences in abundance
+  qiime composition add-pseudocount \
+  --i-table table.qza \
+  --o-composition-table comp-table.qza
+qiime composition ancom \
+  --i-table comp-table.qza \
+  --m-metadata-file /data/project_data/16S/pyc_manifest \
+  --m-metadata-column animal-health \
+  --o-visualization ancom-animal-health.qzv 
+  #gneiss testing 
+  qiime gneiss correlation-clustering \
+  --i-table table.qza \
+  --o-clustering gneiss_corr_clust_hierarchy.qza
+  #test for diff in site animal health category
+  qiime gneiss dendrogram-heatmap \
+  --i-table table.qza \
+  --i-tree gneiss_corr_clust_hierarchy.qza \
+  --m-metadata-file /data/project_data/16S/pyc_manifest \
+  --m-metadata-column site-animal-health \
+  --p-color-map seismic \
+  --o-visualization heatmap.qzv
+   ##
+  qiime feature-classifier classify-sklearn \
+  --i-classifier /data/project_data/16S/training-feature-classifiers/classifier.qza \
+  --i-reads ~/myresults/rep-seqs.qza \
+  --o-classification taxonomy.qza
+  --o-visualization site-heatmap.qzv
+  
+
+  
+  
+  Conclusion
+Remember, based on the toy examples given in the beginning of this tutorial, it is not possible to infer absolute changes of microbes in a given sample. Balances will not be able to provide this sort of answer, but it can limit the number of possible scenarios. Specifically, one of the five following scenarios could have happened.
+
+The taxa in the y0numerator
+ on average have increased between patient group and the healthy control.
+The taxa in the y0denominator
+ on average have decreased between patient group and the healthy control.
+A combination of the above occurred
+Taxa abundances in both y0numerator
+ and y0denominator
+ both increased, but taxa abundances in y0numerator
+ increased more compared to y0denominator
+Taxa abundances in both y0numerator
+ and y0denominator
+ both decreased, but taxa abundances in y0denominator
+ increased more compared to y0numerator
+  
+  compare_categories.py --method adonis -i taxonomy.qza -m /data/project_data/16S/pyc_manifest -c animal_health -o adonis_out -n 999

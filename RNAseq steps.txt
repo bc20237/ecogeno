@@ -1,0 +1,64 @@
+ssh bchrist4@pbio381.uvm.edu
+pw
+conda activate qiime2-2021.8
+export TMPDIR="/data/project_data/16S/tmptmpdir"
+echo $TMPDIR
+#run fast qc before and after cleaning
+#data location
+/data/project_data/RNAseq/rawdata/
+
+#visualize the quality of the reads
+cd /data/project_data/RNAseq/rawdata
+fastqc FILENAME*.fq.gz --outdir=/data/project_data/RNAseq/fastqc/
+#!/bin/bash   
+ 
+# Below is a script to loop through the files in the /rawdata directory, identify matches,  
+# and clean the fastq files, and direct output to /cleandata 
+#this was already done for us
+#should be found in /data/popgen/
+ 
+cd /data/project_data/RNAseq/rawdata
+#make a script
+
+vim name.sh
+#i -- insert mode, make a scrip 
+ 
+for f1 in *_1.fq.gz  
+ 
+do 
+
+ f2=${f1%%_1.fq.gz}"_2.fq.gz"  
+ 
+java -classpath /data/popgen/Trimmomatic-0.39/trimmomatic-0.39.jar org.usadellab.trimmomatic.TrimmomaticPE \
+        #how many CPUs on server to use (out of 24)
+        -threads 10 \
+        -phred33 \
+         "$f1" \
+         "$f2" \
+         /data/project_data/RNAseq/cleandata/"$f1"_left_clean_paired.fq \
+         /data/project_data/RNAseq/cleandata/"$f1"_left_clean_unpaired.fq \
+         /data/project_data/RNAseq/cleandata/"$f2"_right_clean_paired.fq \
+         /data/project_data/RNAseq/cleandata/"$f2"_right_clean_unpaired.fq \
+        ILLUMINACLIP:/data/popgen/Trimmomatic-0.39/adapters/TruSeq3-PE.fa:2:30:10 \
+        LEADING:20 \
+        TRAILING:20 \
+        SLIDINGWINDOW:6:20 \
+        MINLEN:36 
+>> log.txt
+ 
+done
+
+#to exit insert mode 
+#escape, shift : w, q, ! 
+
+chmod u+x test.sh
+
+ll *.html | wc -l
+
+rm
+
+fastqc AA_F11*.fq.qz --outdir=/data/project_data/RNAseq/fastqc/clean
+#multiqc is just a visualization tool doesnt actually change anything
+ 
+scp bchrist4@pbio381.uvm.edu:~/data/project_data/RNAseq/fastqc/clean/multiqc_report.html .
+

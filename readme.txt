@@ -5,3 +5,4 @@ in terminal
 ssh netID@pbio381.uvm.edu
 
 repository for this class: documents github ecogeno
+cd ll ls zcat
